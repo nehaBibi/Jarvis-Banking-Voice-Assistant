@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Jarvis Banking AI</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        /* =====================
+   LOGIN SCREEN
+===================== */
+        .login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 280px;
+        }
+
+        .login-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+        }
+
+        .login-form input {
+            padding: 12px !important;
+            border-radius: 8px !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: white !important;
+            font-size: 14px !important;
+        }
+
+        .login-form input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .login-form button {
+            padding: 12px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .login-form button:hover {
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.3);
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            font-size: 12px;
+            text-align: center;
+            padding: 8px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 6px;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+    </style>
+
+    <style>
+        /* =====================
+   BACKGROUND
+===================== */
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: linear-gradient(135deg, #0a0f1c, #111a2e, #0e2a3a);
+            transition: 0.4s;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #eef3f9, #ffffff);
+        }
+
+        /* =====================
+   CHAT CONTAINER
+===================== */
+        .chat-container {
+            width: 430px;
+            height: 90vh;
+            max-height: 620px;
+
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(22px);
+
+            border-radius: 26px;
+            overflow: hidden;
+
+            display: flex;
+            flex-direction: column;
+
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        body.light .chat-container {
+            background: white;
+            border: 1px solid #e6e6e6;
+        }
+
+        /* =====================
+   HEADER
+===================== */
+        .chat-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* =====================
+   CHAT AREA
+===================== */
+        .chat-box {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* MESSAGE */
+        .msg {
+            padding: 12px 14px;
+            border-radius: 16px;
+            max-width: 75%;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        /* USER */
+        .user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            color: white;
+            box-shadow: 0 6px 15px rgba(0, 114, 255, 0.3);
+        }
+
+        /* BOT */
+        .bot {
+            align-self: flex-start;
+            background: rgba(0, 255, 210, 0.10);
+            color: #7fffd4;
+            border: 1px solid rgba(0, 255, 210, 0.25);
+        }
+
+        /* =====================
+   INPUT BAR
+===================== */
+        .input-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* INPUT */
+        input {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            outline: none;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        body.light input {
+            background: #f2f4f8;
+            color: #111;
+        }
+
+        /* SEND BUTTON */
+        .send-btn {
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            font-weight: bold;
+
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.3);
+        }
+
+        /* =====================
+   UPDATED MIC BUTTON (FIXED COLOR)
+===================== */
+        .mic-btn {
+            padding: 12px;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+
+            /* NEW PREMIUM BLUE MATCH */
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            color: white;
+
+            box-shadow: 0 6px 18px rgba(0, 114, 255, 0.35);
+            transition: 0.3s ease;
+        }
+
+        .mic-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px rgba(0, 114, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-title">🏦 JARVIS BANK AI</div>
+        <div class="login-form">
+            <input type="text" id="loginUsername" placeholder="Username (demo)" autocomplete="username">
+            <input type="password" id="loginPassword" placeholder="Password (any)" autocomplete="current-password">
+            <button id="loginBtn">Login</button>
+            <div class="error-msg" id="loginError"></div>
+        </div>
+        <div style="color: #aaa; font-size: 12px; text-align: center;">Demo: Use any username and password</div>
+    </div>
+
+    <!-- CHAT CONTAINER (hidden until logged in) -->
+    <div id="chatScreen" class="chat-container" style="display: none;">
+
+        <!-- HEADER -->
+        <div class="chat-header">
+            <div>🏦 JARVIS BANK AI</div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <span id="userDisplay" style="font-size: 11px; opacity: 0.8;"></span>
+                <button class="btn" id="uiMode">🌙</button>
+                <button class="btn" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+
+        <!-- CHAT BOX -->
+        <div class="chat-box" id="chatBox"></div>
+
+        <!-- INPUT BOX -->
+        <div class="input-box">
+            <button class="mic-btn" id="voiceBtn">🎤</button>
+            <input type="text" id="msg" placeholder="Ask banking assistant...">
+            <button class="send-btn" id="send">Send</button>
+        </div>
+
+    </div>
+
+    <script>
+
+        // Configuration
+        const API_BASE_URL = 'http://localhost:5000';  // Update for prod
+        let authToken = null;
+        let currentUser = null;
+        let sessionId = 'session_' + Date.now();
+
+        $(document).ready(function () {
+
+            // Check if already logged in (from localStorage/sessionStorage)
+            let storedToken = localStorage.getItem('auth_token');
+            let storedUser = localStorage.getItem('current_user');
+
+            if (storedToken && storedUser) {
+                authToken = storedToken;
+                currentUser = storedUser;
+                showChatScreen();
+            }
+
+            // ========== LOGIN FLOW ==========
+            $("#loginBtn").click(handleLogin);
+            $("#loginUsername").keypress(e => { if (e.which == 13) handleLogin(); });
+            $("#loginPassword").keypress(e => { if (e.which == 13) handleLogin(); });
+
+            function handleLogin() {
+                let username = $("#loginUsername").val().trim();
+                let password = $("#loginPassword").val().trim();
+
+                if (!username || !password) {
+                    showLoginError("Username and password required");
+                    return;
+                }
+
+                // Validate username format (3-20 alphanumeric + underscore)
+                if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) {
+                    showLoginError("Username must be 3-20 characters (letters, numbers, underscore only)");
+                    return;
+                }
+
+                console.log("🔐 Attempting login to:", API_BASE_URL + '/auth');
+                console.log("📝 Username:", username);
+
+                $.ajax({
+                    url: API_BASE_URL + '/auth',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ username, password }),
+                    timeout: 5000,
+                    success: function (resp) {
+                        console.log("✅ Login successful:", resp);
+                        authToken = resp.access_token;
+                        currentUser = resp.user.name;
+
+                        // Store token for session persistence
+                        localStorage.setItem('auth_token', authToken);
+                        localStorage.setItem('current_user', currentUser);
+
+                        showChatScreen();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("❌ Login error:", status, error);
+                        console.error("Response:", xhr.responseText);
+
+                        let msg = "Login failed";
+
+                        // Better error detection
+                        if (status === "timeout") {
+                            msg = "⏱️ Connection timeout - Is backend running? (python app.py)";
+                        } else if (status === "error") {
+                            if (!xhr.responseText) {
+                                msg = "⚠️ No response from server - Is backend running? (python app.py)";
+                            } else if (xhr.responseJSON?.error) {
+                                msg = xhr.responseJSON.error;
+                            } else {
+                                msg = `Server error: ${xhr.status} ${xhr.statusText}`;
+                            }
+                        }
+
+                        showLoginError(msg);
+                    }
+                });
+            }
+
+            function showLoginError(msg) {
+                console.warn("⚠️ Login Error:", msg);
+                $("#loginError").text(msg).addClass("show");
+                setTimeout(() => $("#loginError").removeClass("show"), 5000);
+            }
+
+            // ========== CHAT FLOW ==========
+
+            function showChatScreen() {
+                $("#loginScreen").hide();
+                $("#chatScreen").show();
+                $("#userDisplay").text(`@${currentUser}`);
+                botReply("Hello! I am Jarvis Banking AI. How can I help you today?");
+
+                $("#send").click(sendMessage);
+                $("#msg").keypress(e => { if (e.which == 13) sendMessage(); });
+                $("#voiceBtn").click(startVoiceInput);
+                $("#logoutBtn").click(handleLogout);
+                $("#uiMode").click(() => $("body").toggleClass("light"));
+            }
+
+            function sendMessage() {
+                let text = $("#msg").val().trim();
+                if (!text) return;
+
+                $("#msg").val("");
+
+                // Show user message
+                $("#chatBox").append(`<div class='msg user'>${escapeHtml(text)}</div>`);
+                $("#chatBox").scrollTop($("#chatBox")[0].scrollHeight);
+
+                // Send to backend
+                $.ajax({
+                    url: API_BASE_URL + '/chat',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    headers: {
+                        'Authorization': 'Bearer ' + authToken
+                    },
+                    data: JSON.stringify({
+                        message: text,
+                        session_id: sessionId,
+                        agent: 'bfs'
+                    }),
+                    success: function (resp) {
+                        let reply = resp.reply;
+                        botReply(reply);
+                        speak(reply);
+
+                        // Log agent info (optional)
+                        console.log(`Agent: ${resp.agent}, Safe: ${resp.safe}, Latency: ${resp.metadata.latency_ms}ms`);
+                    },
+                    error: function (xhr) {
+                        let errMsg = xhr.responseJSON?.error || "Error communicating with server";
+                        botReply(`⚠️ ${errMsg}`);
+                    }
+                });
+            }
+
+            function botReply(text) {
+                $("#chatBox").append(`<div class='msg bot'>${escapeHtml(text)}</div>`);
+                $("#chatBox").scrollTop($("#chatBox")[0].scrollHeight);
+            }
+
+            function speak(text) {
+                let msg = new SpeechSynthesisUtterance(text);
+                msg.lang = "en-US";
+                window.speechSynthesis.speak(msg);
+            }
+
+            function startVoiceInput() {
+                if (!("webkitSpeechRecognition" in window)) {
+                    alert("Voice not supported in this browser");
+                    return;
+                }
+
+                let recognition = new webkitSpeechRecognition();
+                recognition.lang = "en-US";
+                recognition.start();
+
+                recognition.onresult = function (event) {
+                    let voiceText = event.results[0][0].transcript;
+                    $("#msg").val(voiceText);
+                    $("#send").click();
+                };
+
+                recognition.onerror = function () {
+                    botReply("Sorry, I didn't catch that. Please try again.");
+                };
+            }
+
+            function handleLogout() {
+                authToken = null;
+                currentUser = null;
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('current_user');
+
+                $("#chatScreen").hide();
+                $("#loginScreen").show();
+                $("#chatBox").html("");
+                $("#msg").val("");
+                $("#loginUsername").val("");
+                $("#loginPassword").val("");
+            }
+
+            // ========== UTILITY ==========
+
+            function escapeHtml(text) {
+                let div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
